@@ -153,13 +153,38 @@ def _build_game_state_response(session_id: str, session: GameSession) -> GameSta
     player = session.game.players[0]
     opponent = session.game.players[1]
     
-    # Build cards played history (pairs of player/opponent plays)
+    # Build cards played history, tracking who played each card
+    # Determine who plays first: non-dealer goes first
+    player_goes_first = session.game.dealer != 0  # dealer=1 means opponent is dealer
+    
     cards_played = []
-    playorder = session.game.playorder
-    for i in range(0, len(playorder), 2):
-        player_card = _card_to_model(playorder[i]) if i < len(playorder) else None
-        opponent_card = _card_to_model(playorder[i + 1]) if i + 1 < len(playorder) else None
-        cards_played.append({"player": player_card, "opponent": opponent_card})
+    cards_to_process = []
+    
+    # First, determine which player played each card in playorder
+    for i, card in enumerate(session.game.playorder):
+        if player_goes_first:
+            is_player_card = (i % 2 == 0)
+        else:
+            is_player_card = (i % 2 == 1)
+        cards_to_process.append((card, is_player_card))
+    
+    # Now pair them up, but show incomplete pairs too
+    for i in range(0, len(cards_to_process), 2):
+        first_card, first_is_player = cards_to_process[i]
+        
+        if i + 1 < len(cards_to_process):
+            second_card, second_is_player = cards_to_process[i + 1]
+            # Pair them with correct attribution
+            if first_is_player:
+                cards_played.append({"player": _card_to_model(first_card), "opponent": _card_to_model(second_card)})
+            else:
+                cards_played.append({"player": _card_to_model(second_card), "opponent": _card_to_model(first_card)})
+        else:
+            # Odd card out - show it immediately
+            if first_is_player:
+                cards_played.append({"player": _card_to_model(first_card), "opponent": None})
+            else:
+                cards_played.append({"player": None, "opponent": _card_to_model(first_card)})
     
     # Opponent cards left depends on phase: before playhand is created use hand length, otherwise playhand length
     opponent_cards_left = len(opponent.playhand) if opponent.playhand else len(opponent.hand)
@@ -255,6 +280,20 @@ def throw_crib(session_id: str, req: ThrowCribRequest) -> GameStateResponse:
     
     session.phase = "play"
     
+    # If player has crib (dealer=0), opponent goes first
+    if session.game.dealer == 0:
+        # Opponent plays first
+        count = session.game.gameState()['count']
+        opp_card = opponent.playCard(session.game.gameState())
+        if opp_card is None:
+            # Opponent goes; player gets 1 pip
+            player.pips += 1
+        else:
+            count += opp_card.value()
+            session.game.inplay.append(opp_card)
+            session.game.playorder.append(opp_card)
+            opponent.pips += _score_cards(session.game.inplay)
+    
     state = _build_game_state_response(session_id, session)
     state.message = "Play a card (must keep count <= 31)."
     return state
@@ -262,7 +301,7 @@ def throw_crib(session_id: str, req: ThrowCribRequest) -> GameStateResponse:
 
 @app.post("/game/{session_id}/play-card", response_model=GameStateResponse)
 def play_card(session_id: str, req: PlayCardRequest) -> GameStateResponse:
-    """Player plays a card. Opponent plays in response. Returns updated state."""
+    """Player plays a card. Returns updated state immediately. Opponent plays on next endpoint call."""
     if session_id not in SESSIONS:
         raise HTTPException(status_code=404, detail="Session not found")
     
@@ -289,6 +328,30 @@ def play_card(session_id: str, req: PlayCardRequest) -> GameStateResponse:
     session.game.playorder.append(played)
     player.pips += _score_cards(session.game.inplay)
     
+    # Check if hand is complete after player plays
+    if len(player.playhand) == 0 and len(opponent.playhand) == 0:
+        session.phase = "scoring"
+    
+    state = _build_game_state_response(session_id, session)
+    state.message = f"Count: {count}"
+    return state
+
+
+@app.post("/game/{session_id}/opponent-play", response_model=GameStateResponse)
+def opponent_play(session_id: str) -> GameStateResponse:
+    """Opponent plays their card. Called after player plays."""
+    if session_id not in SESSIONS:
+        raise HTTPException(status_code=404, detail="Session not found")
+    
+    session = SESSIONS[session_id]
+    if session.phase != "play":
+        raise HTTPException(status_code=400, detail=f"Not in play phase (current: {session.phase})")
+    
+    player = session.game.players[0]
+    opponent = session.game.players[1]
+    
+    count = session.game.gameState()['count']
+    
     # Opponent plays (or goes)
     opp_card = opponent.playCard(session.game.gameState())
     if opp_card is None:
@@ -301,7 +364,7 @@ def play_card(session_id: str, req: PlayCardRequest) -> GameStateResponse:
         session.game.playorder.append(opp_card)
         opponent.pips += _score_cards(session.game.inplay)
     
-    # Check if hand is complete
+    # Check if hand is complete after opponent plays
     if len(player.playhand) == 0 and len(opponent.playhand) == 0:
         session.phase = "scoring"
     
