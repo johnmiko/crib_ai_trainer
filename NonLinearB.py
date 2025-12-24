@@ -251,7 +251,7 @@ class NonLinearB(Player):
                                                                                            gameState['numCards'][
                                                                                                self.number % 2]))
                 else:
-                    cardScores[i] = -np.Inf
+                    cardScores[i] = -np.inf
 
             if not (np.isinf(np.amax(cardScores))):
                 cardToPlay = self.playhand[max(range(len(cardScores)), key=cardScores.__getitem__)]
