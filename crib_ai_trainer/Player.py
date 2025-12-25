@@ -21,7 +21,7 @@
 ################################################################################
 
 from abc import ABC, abstractmethod
-from Deck import Card
+from .Deck import Card
 
 class Player(ABC):
     def __init__(self, number, verbose=False):

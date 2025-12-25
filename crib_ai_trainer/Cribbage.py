@@ -25,11 +25,11 @@
 ################################################################################
 
 # Cribbage imports
-from Deck import Rank,Deck,RiggedDeck
-from Scoring import getScore,scoreCards
+from .Deck import Rank,Deck,RiggedDeck
+from .Scoring import getScore,scoreCards
 
 # Utility imports
-from Utilities import cardsString,areCardsEqual
+from .Utilities import cardsString,areCardsEqual
 import random
 
 class Cribbage:

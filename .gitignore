@@ -2,3 +2,4 @@ to do.txt
 .idea/
 __pycache__/
 *.pyc
+trained_models/

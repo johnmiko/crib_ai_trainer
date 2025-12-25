@@ -18,13 +18,11 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-from Arena import Arena
+from crib_ai_trainer.Arena import Arena
 import numpy as np
 from pathlib import Path
-from Myrmidon import Myrmidon
-from LinearB import LinearB
-from NonLinearB import NonLinearB
-from Perceptron import Perceptron
+from models.Myrmidon import Myrmidon
+from models.Perceptron import Perceptron
 
 logger = logging.getLogger(__name__)
 
@@ -152,8 +150,6 @@ def main(num_games_per_match: int = 10):
     # Define players with their factories
     opponents = {
         "myrmidon": lambda num: Myrmidon(number=num, numSims=10, verboseFlag=False),
-        "linearb": lambda num: LinearB(number=num, alpha=0.3, Lambda=0.9, verboseFlag=False),
-        "nonlinearb": lambda num: NonLinearB(number=num, alpha=0.3, Lambda=0.7, verboseFlag=False),
         "perceptron": lambda num: Perceptron(number=num, alpha=0.1, verboseFlag=False),
     }
     

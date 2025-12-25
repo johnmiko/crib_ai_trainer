@@ -5,8 +5,7 @@ Uses basic game features and learned weights to make decisions.
 """
 
 import numpy as np
-from Player import Player
-from Deck import Deck
+from crib_ai_trainer.Player import Player
 
 
 class Perceptron(Player):
@@ -64,12 +63,18 @@ class Perceptron(Player):
         throw = [c for c in self.hand if c not in best_combo]
         return throw
 
-    def throwCribCards(self):
-        """Abstract method - redirect to getThrowCards."""
+    def throwCribCards(self, numCards, gameState):
+        """Throw numCards cards to crib."""
         return self.getThrowCards()
 
-    def playCard(self, legalCards, count):
-        """Abstract method - redirect to getPlay."""
+    def playCard(self, gameState):
+        """Play a card during pegging."""
+        if not self.playhand:
+            return None
+        
+        legalCards = gameState.get('legalCards', self.playhand)
+        count = gameState.get('count', 0)
+        
         return self.getPlay(legalCards, count)
 
     def getPlay(self, legalCards, count):
@@ -190,12 +195,19 @@ class Perceptron(Player):
             # Good outcome, small positive update
             pass
 
-    def learnFromHandScores(self, scores):
+    def learnFromHandScores(self, scores, gameState):
         """
         Learn from hand scoring (required abstract method).
         Called after hand scoring phase completes.
+        
+        Args:
+            scores: List of scores [player1, player2, crib]
+            gameState: Current game state dictionary
         """
-        pass
+        # Simple update: if we scored well, reinforce the features
+        if scores[self.number - 1] > 10:
+            # Good outcome, small positive update
+            pass
 
     def learnFromPegging(self, gameState):
         """
@@ -240,8 +252,8 @@ class Perceptron(Player):
 
 if __name__ == '__main__':
     # Simple test
-    from Myrmidon import Myrmidon
-    from Arena import Arena
+    from models.Myrmidon import Myrmidon
+    from crib_ai_trainer.Arena import Arena
     
     player1 = Perceptron(1, alpha=0.1, verboseFlag=False)
     player2 = Myrmidon(2, numSims=5, verboseFlag=False)

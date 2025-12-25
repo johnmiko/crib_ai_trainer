@@ -24,13 +24,13 @@
 ################################################################################
 
 # Cribbage imports
-from Utilities import cardsString
-from Deck import Card
-from Scoring import scoreCards, getScore
-from Arena import Arena
+from crib_ai_trainer.Utilities import cardsString
+from crib_ai_trainer.Deck import Card
+from crib_ai_trainer.Scoring import scoreCards, getScore
+from crib_ai_trainer.Arena import Arena
 
 # Player imports
-from Player import Player
+from crib_ai_trainer.Player import Player
 
 # Utility imports
 import numpy as np

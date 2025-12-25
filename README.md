@@ -2,7 +2,7 @@
 This project contains the code for Cribbage as a reinforcement learning problem.
 
 ## To get right into it
-The agents are: DeepPeg.py, LinearB.py, Myrmidon.py, Monty.py, Monty2.py, NonLinearB.py, and PlayerRandom.py
+The agents are: Myrmidon.py, Monty.py, Monty2.py, Perceptron.py, and PlayerRandom.py
 
 Each agent can be run directly as a python script
 ```>> python3 <agentname>.py```
@@ -24,11 +24,9 @@ There are four kinds of files in this folder.
 4. Player.py: An abstract class defining what methods a player class must have in order to play well with Cribbage.py.
 5. PlayerRandom.py: A simple instantiation of a Player. Makes decisions randomly.
 6. Myrmidon.py: A Player that makes use of one-step rollouts and heuristics.
-7. LinearB.py: A Player that represents hands using a linear combination of features. These features are then used for episodic semi-gradient one-step Sarsa during the throwing cards phase and for true online Sarsa during the pegging phase.
-8. NonLinearB: A Player that represents hands using a non-linear combination of features. These features are then used for episodic semi-gradient one-step Sarsa during the throwing cards phase and for true online Sarsa during the pegging phase.
-9. DeepPeg: A Player that uses two multilayer perceptron regressors to encode Q values: one for pegging and one for throwing cards.
-10. Monty.py: A player that uses first visit Monte Carlo to learn the Q values for different states. A minor modification of QLearner.
-11. Monty2.py: A second player that uses first visit Monte Carlo to learn the Q values for different states. A minor modification of QLearner.
+7. Perceptron.py: A Player that learns linear weights for throw and peg decisions.
+8. Monty.py: A player that uses first visit Monte Carlo to learn the Q values for different states. A minor modification of QLearner.
+9. Monty2.py: A second player that uses first visit Monte Carlo to learn the Q values for different states. A minor modification of QLearner.
 
 ### GENERAL FILES
 12. Arena.py: Records performance data for a player over a number of hands. Can be used to produce training curve data or to measure final performance levels.
@@ -40,8 +38,7 @@ There are four kinds of files in this folder.
 
 ### MEMORY FILES
 A number of learning agents store parameters in files. These are:
-throwWeights.npy and pegWeights.npy: LinearB
-NLBthrowWeights.npy and NLBpegWeights.npy: NonLinearB
+throwWeights.npy and pegWeights.npy: Perceptron
 Brain files in the directory 'BrainsInJars': QLearner, Monty, and Monty2
 
 # Dependencies

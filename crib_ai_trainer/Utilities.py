@@ -17,7 +17,7 @@
 ################################################################################
 
 # Cribbage imports
-from Deck import *
+from .Deck import *
 
 # Utility imports
 import numpy as np

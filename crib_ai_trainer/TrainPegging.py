@@ -15,9 +15,6 @@
 #    - Deck.py (in local project)
 #    - PlayerRandom.py (in local project)
 #    - Myrmidon.py (in local project)
-#    - LinearB.py (in local project)
-#    - NonLinearB.py (in local project)
-#    - DeepPeg.py (in local project)
 #    - Monty.py (in local project)
 #    - Monty2.py (in local project)
 #    - numpy (standard python Library)
@@ -31,9 +28,6 @@ from Deck import Deck,Card
 # Player imports
 from PlayerRandom import PlayerRandom
 from Myrmidon import Myrmidon
-from LinearB import LinearB
-from NonLinearB import NonLinearB
-from DeepPeg import DeepPeg
 from Monty import Monty
 from Monty2 import Monty2
 
@@ -112,7 +106,7 @@ if __name__ == '__main__':
     playersSet = 0
 
     while playersSet < 2:
-        playerName = input("Choose a player (Random, Myrmidon, LinearB, NonLinearB, DeepPeg, Carlo McMonty, Carlos Monteros): ")
+        playerName = input("Choose a player (Random, Myrmidon, Carlo McMonty, Carlos Monteros): ")
         if playerName == "Random":
             playersSet = playersSet + 1
             players.append(PlayerRandom(playersSet,False))
@@ -120,19 +114,6 @@ if __name__ == '__main__':
             playersSet = playersSet + 1
             numSims = int(input("You chose Myrmidon. What number of simulations?: "))
             players.append(Myrmidon(playersSet,numSims,False))
-        elif playerName == "LinearB":
-            playersSet = playersSet + 1
-            alpha = np.max(np.array([0.0,np.min(np.array([1.0,float(input("You chose LinearB. What step size?: "))]))]))
-            Lambda = np.max(np.array([0.0,np.min(np.array([1.0,float(input("                   What trace decay rate?: "))]))]))
-            players.append(LinearB(playersSet,alpha,Lambda,False))
-        elif playerName == "NonLinearB":
-            playersSet = playersSet + 1
-            alpha = np.max(np.array([0.0,np.min(np.array([1.0,float(input("You chose NonLinearB. What step size?: "))]))]))
-            Lambda = np.max(np.array([0.0,np.min(np.array([1.0,float(input("                      What trace decay rate?: "))]))]))
-            players.append(NonLinearB(playersSet,alpha,Lambda,False))
-        elif playerName == "DeepPeg":
-            playersSet = playersSet + 1
-            players.append(DeepPeg(playersSet,True,False))
         elif playerName == "Carlo McMonty":
             playersSet = playersSet + 1
             players.append(Monty(playersSet,False))

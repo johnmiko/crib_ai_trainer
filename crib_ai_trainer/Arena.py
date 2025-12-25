@@ -20,12 +20,12 @@
 ################################################################################
 
 # Cribbage imports
-from Cribbage import Cribbage
-from Deck import *
+from .Cribbage import Cribbage
+from .Deck import *
 
 # Utility imports
 import numpy as np
-from Utilities import *
+from .Utilities import *
 
 
 class Arena():

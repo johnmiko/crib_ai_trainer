@@ -21,13 +21,15 @@
 #
 ################################################################################
 
-from Deck import *
-from Utilities import *
+from .Deck import *
+from .Utilities import *
 from itertools import combinations
 from math import factorial
 
 # These functions score a given hand and starter card.
 def getScore(hand, starter, verbose):
+    if not hand:
+        return 0
     pips = 0
     # Check scoring where the starter card matters
     pips += checkNobs(hand, starter, verbose)

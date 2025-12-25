@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
 Benchmark script to compare _new vs _old model versions.
-For each model type (LinearB, NonLinearB, DeepPeg), pit the _new version
-against the _old version and report win percentages.
+For Perceptron models, pit the _new version against the _old version and
+report win percentages.
 """
 
 import sys
@@ -18,12 +18,9 @@ if sys.platform == 'win32':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8', errors='replace')
 
-from Arena import Arena
-from LinearB import LinearB
-from NonLinearB import NonLinearB
-from DeepPeg import DeepPeg
+from crib_ai_trainer.Arena import Arena
+from models.Perceptron import Perceptron
 import numpy as np
-import joblib
 
 logger = logging.getLogger(__name__)
 
@@ -52,54 +49,20 @@ def _suppress_stdout():
         yield
 
 
-def load_linear_b_model(version: str, number: int):
-    """Load LinearB model from _new or _old files."""
-    models_dir = Path(__file__).parent / "models" / "linear_b"
-    
+def load_perceptron_model(version: str, number: int):
+    """Load Perceptron model from _new or _old files."""
+    models_dir = Path(__file__).resolve().parents[1] / "trained_models" / "perceptron"
+
     throw_weights_path = models_dir / f"throw_weights_{version}.npy"
     peg_weights_path = models_dir / f"peg_weights_{version}.npy"
-    
+
     if not throw_weights_path.exists() or not peg_weights_path.exists():
-        raise FileNotFoundError(f"LinearB {version} model not found at {models_dir}")
-    
-    player = LinearB(number=number, alpha=0.3, Lambda=0.7, verboseFlag=False)
+        raise FileNotFoundError(f"Perceptron {version} model not found at {models_dir}")
+
+    player = Perceptron(number=number, alpha=0.1, verboseFlag=False)
     player.throwingWeights = np.load(throw_weights_path)
     player.peggingWeights = np.load(peg_weights_path)
-    
-    return player
 
-
-def load_non_linear_b_model(version: str, number: int):
-    """Load NonLinearB model from _new or _old files."""
-    models_dir = Path(__file__).parent / "models" / "linear_b"
-    
-    throw_weights_path = models_dir / f"nlb_throw_weights_{version}.npy"
-    peg_weights_path = models_dir / f"nlb_peg_weights_{version}.npy"
-    
-    if not throw_weights_path.exists() or not peg_weights_path.exists():
-        raise FileNotFoundError(f"NonLinearB {version} model not found at {models_dir}")
-    
-    player = NonLinearB(number=number, alpha=0.3, Lambda=0.7, verboseFlag=False)
-    player.throwingWeights = np.load(throw_weights_path)
-    player.peggingWeights = np.load(peg_weights_path)
-    
-    return player
-
-
-def load_deep_peg_model(version: str, number: int):
-    """Load DeepPeg model from _new or _old files."""
-    models_dir = Path(__file__).parent / "models" / "deep_peg"
-    
-    peg_brain_path = models_dir / f"pegging_brain_{version}.pkl"
-    throw_brain_path = models_dir / f"throwing_brain_{version}.pkl"
-    
-    if not peg_brain_path.exists() or not throw_brain_path.exists():
-        raise FileNotFoundError(f"DeepPeg {version} model not found at {models_dir}")
-    
-    player = DeepPeg(number=number, softmaxFlag=False, saveBrains=False, verbose=False)
-    player.peggingBrain = joblib.load(peg_brain_path)
-    player.throwingBrain = joblib.load(throw_brain_path)
-    
     return player
 
 
@@ -185,19 +148,19 @@ def main(num_games_per_match: int = 100):
     logger.info("")
     
     all_results = {}
-    
-    # Test LinearB
+
+    # Test Perceptron
     try:
         logger.info("\n" + "=" * 60)
-        logger.info("LINEARB: _new vs _old")
+        logger.info("PERCEPTRON: _new vs _old")
         logger.info("=" * 60)
-        
-        linear_b_new = load_linear_b_model("new", 1)
-        linear_b_old = load_linear_b_model("old", 2)
-        
-        results = play_match(linear_b_new, "LinearB_new", linear_b_old, "LinearB_old", num_games_per_match)
-        all_results["linearb"] = results
-        
+
+        perc_new = load_perceptron_model("new", 1)
+        perc_old = load_perceptron_model("old", 2)
+
+        results = play_match(perc_new, "Perceptron_new", perc_old, "Perceptron_old", num_games_per_match)
+        all_results["perceptron"] = results
+
         if results["p1_win_pct"] > results["p2_win_pct"]:
             logger.info(f"\n✓ NEW model is BETTER ({results['p1_win_pct']:.1f}% > {results['p2_win_pct']:.1f}%)")
         elif results["p1_win_pct"] < results["p2_win_pct"]:
@@ -205,49 +168,7 @@ def main(num_games_per_match: int = 100):
         else:
             logger.info(f"\n= NEW and OLD models are TIED ({results['p1_win_pct']:.1f}%)")
     except FileNotFoundError as e:
-        logger.warning(f"\nSkipping LinearB: {e}")
-    
-    # Test NonLinearB
-    try:
-        logger.info("\n" + "=" * 60)
-        logger.info("NONLINEARB: _new vs _old")
-        logger.info("=" * 60)
-        
-        nlb_new = load_non_linear_b_model("new", 1)
-        nlb_old = load_non_linear_b_model("old", 2)
-        
-        results = play_match(nlb_new, "NonLinearB_new", nlb_old, "NonLinearB_old", num_games_per_match)
-        all_results["nonlinearb"] = results
-        
-        if results["p1_win_pct"] > results["p2_win_pct"]:
-            logger.info(f"\n✓ NEW model is BETTER ({results['p1_win_pct']:.1f}% > {results['p2_win_pct']:.1f}%)")
-        elif results["p1_win_pct"] < results["p2_win_pct"]:
-            logger.info(f"\n✗ NEW model is WORSE ({results['p1_win_pct']:.1f}% < {results['p2_win_pct']:.1f}%)")
-        else:
-            logger.info(f"\n= NEW and OLD models are TIED ({results['p1_win_pct']:.1f}%)")
-    except FileNotFoundError as e:
-        logger.warning(f"\nSkipping NonLinearB: {e}")
-    
-    # Test DeepPeg
-    try:
-        logger.info("\n" + "=" * 60)
-        logger.info("DEEPPEG: _new vs _old")
-        logger.info("=" * 60)
-        
-        deep_peg_new = load_deep_peg_model("new", 1)
-        deep_peg_old = load_deep_peg_model("old", 2)
-        
-        results = play_match(deep_peg_new, "DeepPeg_new", deep_peg_old, "DeepPeg_old", num_games_per_match)
-        all_results["deeppeg"] = results
-        
-        if results["p1_win_pct"] > results["p2_win_pct"]:
-            logger.info(f"\n✓ NEW model is BETTER ({results['p1_win_pct']:.1f}% > {results['p2_win_pct']:.1f}%)")
-        elif results["p1_win_pct"] < results["p2_win_pct"]:
-            logger.info(f"\n✗ NEW model is WORSE ({results['p1_win_pct']:.1f}% < {results['p2_win_pct']:.1f}%)")
-        else:
-            logger.info(f"\n= NEW and OLD models are TIED ({results['p1_win_pct']:.1f}%)")
-    except FileNotFoundError as e:
-        logger.warning(f"\nSkipping DeepPeg: {e}")
+        logger.warning(f"\nSkipping Perceptron: {e}")
     
     # Final summary
     logger.info("\n" + "=" * 60)

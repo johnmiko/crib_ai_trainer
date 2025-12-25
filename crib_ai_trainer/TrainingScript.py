@@ -14,9 +14,6 @@
 #    - Arena.py (in local project)
 #    - PlayerRandom.py (in local project)
 #    - Myrmidon.py (in local project)
-#    - LinearB.py (in local project)
-#    - NonLinearB.py (in local project)
-#    - DeepPeg.py (in local project)
 #    - Monty.py (in local project)
 #    - Monty2.py (in local project)
 #    - numpy (standard python library)
@@ -30,9 +27,6 @@ from CriticSessions import CriticSessions
 # PLayer imports
 from PlayerRandom import PlayerRandom
 from Myrmidon import Myrmidon
-from LinearB import LinearB
-from NonLinearB import NonLinearB
-from DeepPeg import DeepPeg
 from Monty import Monty
 from Monty2 import Monty2
 
@@ -48,21 +42,19 @@ verboseFlag = True
 
 # Training
 if trainFlag:
-    learningAgents = [DeepPeg(1,False,True,False)]#[LinearB(1,0.5,0.9,False),NonLinearB(1,0.3,0.7,False),DeepPeg(1,True,False),Monty(1,False),Monty2(1,False)]
-    opponentAgents = [Myrmidon(2,5,False),DeepPeg(2,False,False,False)]
+    learningAgents = [Myrmidon(1,5,False)]
+    opponentAgents = [PlayerRandom(2,False)]
 
-    for i in range(100):
-        for j in range(len(learningAgents)):
-            for k in range(len(opponentAgents)):
-                player1 = learningAgents[j]
-                player2 = opponentAgents[k]
+    for _ in range(100):
+        for player1 in learningAgents:
+            for player2 in opponentAgents:
                 arena = Arena([player1,player2],False,verboseFlag)
                 arena.playHands(10)
             
 
 # Tournament
 if tournamentFlag:
-    opponentAgents = [PlayerRandom(1,False),DeepPeg(1,True,False,False),DeepPeg(1,False,False,False),Myrmidon(2,5,False)]
+    opponentAgents = [PlayerRandom(1,False),Myrmidon(2,5,False),Monty(1,False),Monty2(1,False)]
     numAgents = len(opponentAgents)
     peggingResults = np.zeros((numAgents,numAgents))
     handResults = np.zeros((numAgents,numAgents))
@@ -97,9 +89,9 @@ if tournamentFlag:
 
 # Critic
 if criticFlag:
-        player1 = DeepPeg(1,False,True,True)
-        player2 = Myrmidon(2,5,False)
-        critic = Myrmidon(0,5,False)
-        criticSession = CriticSessions([player1,player2],critic,verboseFlag)
-        criticSession.playHands(10)
+    player1 = Myrmidon(1,5,False)
+    player2 = PlayerRandom(2,False)
+    critic = Myrmidon(0,5,False)
+    criticSession = CriticSessions([player1,player2],critic,verboseFlag)
+    criticSession.playHands(10)
     
